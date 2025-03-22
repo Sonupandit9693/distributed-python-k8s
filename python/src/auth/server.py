@@ -45,6 +45,22 @@ def login():
     
 
 
+@server.route("/validate", methods=["POST"])
+def validate():
+    encoded_jwt = request.headers.get("Authorization")
+    if not encoded_jwt:
+        return {"message": "Token is missing"}, 401
+    
+    encoded_jwt = encoded_jwt.split(" ")[1]
+    try:
+        decoded = jwt.decode(encoded_jwt, os.environ.get("JWT_SECRET"), algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return {"message": "Token has expired"}, 401
+    except jwt.InvalidTokenError:
+        return {"message": "Invalid token"}, 401
+    
+    return decoded
+
 # create JWT token
 def createJWT(username, secret, is_admin):
     token = jwt.encode(
@@ -59,6 +75,11 @@ def createJWT(username, secret, is_admin):
     )
     return {"token": token.decode("UTF-8")} 
 
+
+# default route
+@server.route("/", methods=["GET"])
+def default():
+    return {"message": "Hi"}
 
 
 if __name__ == "__main__":
