@@ -1,26 +1,30 @@
-FROM python:3.10-slim-bullseye
+# Stage 1: Build stage
+FROM python:3.10-slim-bullseye as builder
 
-# Configure apt for better network handling and install dependencies
-RUN echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries && \
-    echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4 && \
-    echo 'Acquire::http::Timeout "10";' > /etc/apt/apt.conf.d/80-timeouts && \
-    echo 'Acquire::https::Timeout "10";' >> /etc/apt/apt.conf.d/80-timeouts && \
-    sed -i 's|http://ftp.debian.org|http://deb.debian.org|' /etc/apt/sources.list && \
-    apt-get clean && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    gnupg \
-    ca-certificates \
     build-essential \
-    default-libmysqlclient-dev && \
-    rm -rf /var/lib/apt/lists/*  # Cleanup unnecessary package lists
+    default-libmysqlclient-dev \
+    pkg-config \
+    libmariadb-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
 
-COPY ./requirements.txt /app
-RUN pip install --no-cache-dir --requirement /app/requirements.txt
+# Stage 2: Runtime stage
+FROM python:3.10-slim-bullseye
 
-COPY . /app
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    default-mysql-client && \
+    rm -rf /var/lib/apt/lists/*
 
+WORKDIR /app
+COPY --from=builder /root/.local /root/.local
+COPY . .
+
+ENV PATH=/root/.local/bin:$PATH
 EXPOSE 5000
 CMD ["python3", "server.py"]
