@@ -2,6 +2,10 @@
 
 A **microservices-based** system built using **Python** and deployed on **Kubernetes**. It includes authentication, API gateway, interservice communication, and RabbitMQ for event-driven processing.
 
+![alt text](image.png)
+![alt text](image-3.png)
+![alt text](image-4.png)
+
 ## 📌 Features
 - **Auth Service** – JWT-based authentication  
 - **API Gateway** – Handles requests & routes to services  
