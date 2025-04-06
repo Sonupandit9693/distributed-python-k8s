@@ -10,19 +10,19 @@ spec:
     matchLabels:
       app: gateway
   strategy: 
-    type: RollingUpdtaes
-    rollingUpdates:
-      maxSurge : 3
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
   template:
     metadata:
       labels:
-        app : gateway
+        app: gateway
     spec:
       containers:
         - name: gateway
           image: sonukumarcode/gateway
-          envForm:
+          envFrom:
             - configMapRef:
-              name: gatewap-configmap
+                name: gateway-configmap
             - secretRef:
-              name: gateway-secret 
+                name: gateway-secret
